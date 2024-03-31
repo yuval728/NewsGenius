@@ -1,0 +1,9 @@
+torch
+tensorflow
+numpy
+networkx
+SentencePiece
+nltk
+spacy
+scipy
+streamlit
