@@ -10,3 +10,5 @@ pip install -r requirements.txt
 ### And before you run the project, make sure u run the following file or command
 
 ` py pre-run.py`
+
+### To make sure all the installed files are running properly, run the utils.py file once
