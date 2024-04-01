@@ -1,4 +1,3 @@
-from transformers import MarianMTModel, MarianTokenizer
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
@@ -13,10 +12,10 @@ import requests
 
 
 
-# This part need not be used here, could directly instantiated in the ui itself
-model_name = "Helsinki-NLP/opus-mt-de-en"  # English to German translation
-tokenizer = MarianTokenizer.from_pretrained(model_name)
-model = MarianMTModel.from_pretrained(model_name)
+# # This part need not be used here, could directly instantiated in the ui itself
+# model_name = "Helsinki-NLP/opus-mt-fr-en"  # English to German translation
+# tokenizer = MarianTokenizer.from_pretrained(model_name)
+# model = MarianMTModel.from_pretrained(model_name)
 
 def sentence_similarity(sent1, sent2, stopwords=None):
     if stopwords is None:
@@ -38,6 +37,17 @@ def sentence_similarity(sent1, sent2, stopwords=None):
 
     return 1 - cosine_distance(vector1, vector2)
 
+def build_similarity_matrix(sentences, stop_words):
+    similarity_matrix = np.zeros((len(sentences), len(sentences)))
+
+    for idx1 in range(len(sentences)):
+        for idx2 in range(len(sentences)):
+            if idx1 == idx2:
+                continue
+            similarity_matrix[idx1][idx2] = sentence_similarity(sentences[idx1], sentences[idx2], stop_words)
+
+    return similarity_matrix
+
 def generate_summary(text, num_sentences=3):
     '''
     Generate a summary of the input text using the TextRank algorithm
@@ -58,18 +68,9 @@ def generate_summary(text, num_sentences=3):
 
     return ' '.join(summary)
 
-def build_similarity_matrix(sentences, stop_words):
-    similarity_matrix = np.zeros((len(sentences), len(sentences)))
 
-    for idx1 in range(len(sentences)):
-        for idx2 in range(len(sentences)):
-            if idx1 == idx2:
-                continue
-            similarity_matrix[idx1][idx2] = sentence_similarity(sentences[idx1], sentences[idx2], stop_words)
 
-    return similarity_matrix
-
-def translate(text, model, tokenizer, source_language="en", target_language="de"):
+def Translate(text, model, tokenizer, source_language="en", target_language="de"):
     '''
     Translate the input text from source language to target language
     '''
@@ -89,7 +90,10 @@ def translate(text, model, tokenizer, source_language="en", target_language="de"
 def Crawler(url):
     if url is None:
         return None
-    soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    try:
+        soup = BeautifulSoup(requests.get(url).text, 'html.parser')
+    except:
+        return None
     # main=soup.find('main')
     news_title=soup.find('h1').text
     # news_subtitle=soup.find('h2').text
@@ -100,7 +104,7 @@ def Crawler(url):
     # print(news_title)
     # print(news_subtitle)
     # print()
-    print(news_content)
+    # print(news_content)
     return {
         'title': news_title,
         # 'subtitle': news_subtitle,
@@ -109,23 +113,23 @@ def Crawler(url):
     
 
 
-if __name__ == "__main__":
-    news_data=Crawler('https://www.lepoint.fr/societe/disparition-d-emile-apres-la-decouverte-d-ossements-quelles-sont-les-pistes-des-enqueteurs-01-04-2024-2556475_23.php')
+# if __name__ == "__main__":
+#     news_data=Crawler('https://www.lepoint.fr/societe/disparition-d-emile-apres-la-decouverte-d-ossements-quelles-sont-les-pistes-des-enqueteurs-01-04-2024-2556475_23.php')
     
-    #https://www.tagesschau.de/ausland/asien/israel-gaza-al-schifa-100.htmll #*German
-    #https://www.dw.com/es/ej%C3%A9rcito-israel%C3%AD-se-retira-del-hospital-al-shifa-en-gaza-tras-dos-semanas-de-asedio/a-68713144 #*Spanish
-    #https://www.lepoint.fr/societe/disparition-d-emile-apres-la-decouverte-d-ossements-quelles-sont-les-pistes-des-enqueteurs-01-04-2024-2556475_23.php #*French
-    #'https://www.indiatoday.in/india/story/arvind-kejriwals-enforcement-directorate-custody-ends-today-to-appear-in-court-2521567-2024-04-01' #!Hindi
+#     #https://www.tagesschau.de/ausland/asien/israel-gaza-al-schifa-100.htmll #*German
+#     #https://www.dw.com/es/ej%C3%A9rcito-israel%C3%AD-se-retira-del-hospital-al-shifa-en-gaza-tras-dos-semanas-de-asedio/a-68713144 #*Spanish
+#     #https://www.lepoint.fr/societe/disparition-d-emile-apres-la-decouverte-d-ossements-quelles-sont-les-pistes-des-enqueteurs-01-04-2024-2556475_23.php #*French
+#     #'https://www.indiatoday.in/india/story/arvind-kejriwals-enforcement-directorate-custody-ends-today-to-appear-in-court-2521567-2024-04-01' #!Hindi
     
-    print(news_data['title'])
-    print(translate(news_data['title'], model, tokenizer))
-    # print(translate(news_data['subtitle'], model, tokenizer))
+#     print(news_data['title'])
+#     print(translate(news_data['title'], model, tokenizer))
+#     # print(translate(news_data['subtitle'], model, tokenizer))
     
-    # text = '''Der schnelle Braunfuchs springt über den faulen Hund. 
-    # Der Hund ist faul und der Fuchs ist schnell. Der schnelle Braunfuchs springt über den faulen Hund. 
-    # Der Hund ist faul und der Fuchs ist schnell.'''
-    translated_text = translate(news_data['content'], model, tokenizer)
-    print(translated_text)
-    summary = generate_summary(translated_text)
-    print(summary)
+#     # text = '''Der schnelle Braunfuchs springt über den faulen Hund. 
+#     # Der Hund ist faul und der Fuchs ist schnell. Der schnelle Braunfuchs springt über den faulen Hund. 
+#     # Der Hund ist faul und der Fuchs ist schnell.'''
+#     translated_text = translate(news_data['content'], model, tokenizer)
+#     print(translated_text)
+#     summary = generate_summary(translated_text)
+#     print(summary)
     
