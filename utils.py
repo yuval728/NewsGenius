@@ -86,10 +86,9 @@ def translate(text, model, tokenizer, source_language="en", target_language="de"
     translated_text = tokenizer.batch_decode(translation, skip_special_tokens=True)
     return ' '.join(translated_text)
 
-def Crawler(url='https://www.indiatoday.in/india/story/arvind-kejriwals-enforcement-directorate-custody-ends-today-to-appear-in-court-2521567-2024-04-01'):
-    '''
-    To be implemented
-    '''
+def Crawler(url):
+    if url is None:
+        return None
     soup = BeautifulSoup(requests.get(url).text, 'html.parser')
     # main=soup.find('main')
     news_title=soup.find('h1').text
@@ -116,7 +115,7 @@ if __name__ == "__main__":
     #https://www.tagesschau.de/ausland/asien/israel-gaza-al-schifa-100.htmll #*German
     #https://www.dw.com/es/ej%C3%A9rcito-israel%C3%AD-se-retira-del-hospital-al-shifa-en-gaza-tras-dos-semanas-de-asedio/a-68713144 #*Spanish
     #https://www.lepoint.fr/societe/disparition-d-emile-apres-la-decouverte-d-ossements-quelles-sont-les-pistes-des-enqueteurs-01-04-2024-2556475_23.php #*French
-    
+    #'https://www.indiatoday.in/india/story/arvind-kejriwals-enforcement-directorate-custody-ends-today-to-appear-in-court-2521567-2024-04-01' #!Hindi
     
     print(news_data['title'])
     print(translate(news_data['title'], model, tokenizer))
