@@ -5,7 +5,9 @@ from nltk.probability import FreqDist
 from nltk.cluster.util import cosine_distance
 import numpy as np
 import networkx as nx
-
+import pickle
+import tensorflow as tf
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from bs4 import BeautifulSoup
 import requests
 
@@ -64,7 +66,8 @@ def generate_summary(text, num_sentences=3):
 
     summary = []
     for i in range(num_sentences):
-        summary.append(ranked_sentences[i][1])
+        if i <= len(ranked_sentences):
+            summary.append(ranked_sentences[i][1])
 
     return ' '.join(summary)
 
@@ -110,7 +113,19 @@ def Crawler(url):
         # 'subtitle': news_subtitle,
         'content': news_content
     }
-    
+
+def GetSequences(text):
+    with open('Models/tokenizer.pickle', 'rb') as handle:
+        tokenizer = pickle.load(handle)
+    sequences = tokenizer.texts_to_sequences([text])
+    padded = pad_sequences(sequences, maxlen=71, padding='post')
+    return padded
+
+def PredictSentiment(text):
+    model = tf.keras.models.load_model('Models/sentiment_analysis.keras')
+    sequences = GetSequences(text)
+    print(model.predict(sequences))
+    return np.argmax(model.predict(sequences), axis=1)
 
 
 # if __name__ == "__main__":
