@@ -42,6 +42,28 @@ def detect_language(text, model):
     return model.predict(text)[0]
 
 
+# def test_translation(lang_model, models):
+#     import pandas as pd
+#     import sacrebleu
+#     from collections import defaultdict
+#     blue_scores =  defaultdict(float)
+#     language_scores = defaultdict(float)
+#     df=pd.read_csv('test/translation_test_data.csv')
+#     for i in range(len(df)):
+#         text = df.loc[i, 'Source']
+#         target_lang = df.loc[i, 'Reference']
+#         lang = detect_language([text], lang_model)
+#         language_scores[target_lang]+= (lang==df.loc[i, 'Language'])
+        
+#         translated_text = Translate(text, models[df.loc[i, 'Language']][0], models[df.loc[i, 'Language']][1])
+#         bleu = sacrebleu.corpus_bleu(translated_text, target_lang)
+#         blue_scores[target_lang] = bleu.score
+        
+#     print('Language detection accuracy:', sum(language_scores.values())/len(df))
+#     print('Average BLEU score:', sum(blue_scores.values())/len(df))
+        
+#     print('All tests passed!')
+    
 if __name__=='__main__':
     import time
     
@@ -51,21 +73,22 @@ if __name__=='__main__':
     
     models=load_models()
     
-    texst=['Hello, how are you?', 'Bonjour, comment ça va?', 'Hola, ¿cómo estás?', 'Hallo, wie geht es dir?', 'Ciao, come stai?', 'Hallo, hoe gaat het?', 'Привет, как дела?', 'Olá, como você está?']
-    # English, French, Spanish, German, Italian, Dutch, Russian, Portuguese
+    test_translation(lang_detection_model, models)
+    # texst=['Hello, how are you?', 'Bonjour, comment ça va?', 'Hola, ¿cómo estás?', 'Hallo, wie geht es dir?', 'Ciao, come stai?', 'Hallo, hoe gaat het?', 'Привет, как дела?', 'Olá, como você está?']
+    # # English, French, Spanish, German, Italian, Dutch, Russian, Portuguese
     
-    for text in texst:
-        lang= detect_language([text], lang_detection_model)
+    # for text in texst:
+    #     lang= detect_language([text], lang_detection_model)
         
-        if lang=='English':
-            print('The text is in English')
-        else:
-            print('The text is in', lang)
-            model, tokenizer = models[lang]
-            translated_text = Translate(text, model, tokenizer)
-            print('Translated text:', translated_text)
+    #     if lang=='English':
+    #         print('The text is in English')
+    #     else:
+    #         print('The text is in', lang)
+    #         model, tokenizer = models[lang]
+    #         translated_text = Translate(text, model, tokenizer)
+    #         print('Translated text:', translated_text)
 
-    
+
     print('Time taken:', time.time()-startq)
     
 
