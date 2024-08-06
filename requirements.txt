@@ -1,5 +1,6 @@
-torch
-tensorflow
+torch==2.3
+torchtext==0.18
+# tensorflow
 numpy
 networkx
 SentencePiece

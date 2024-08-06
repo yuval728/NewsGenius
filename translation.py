@@ -73,20 +73,20 @@ if __name__=='__main__':
     
     models=load_models()
     
-    test_translation(lang_detection_model, models)
-    # texst=['Hello, how are you?', 'Bonjour, comment ça va?', 'Hola, ¿cómo estás?', 'Hallo, wie geht es dir?', 'Ciao, come stai?', 'Hallo, hoe gaat het?', 'Привет, как дела?', 'Olá, como você está?']
-    # # English, French, Spanish, German, Italian, Dutch, Russian, Portuguese
+    # test_translation(lang_detection_model, models)
+    texst=['Hello, how are you?', 'Bonjour, comment ça va?', 'Hola, ¿cómo estás?', 'Hallo, wie geht es dir?', 'Ciao, come stai?', 'Hallo, hoe gaat het?', 'Привет, как дела?', 'Olá, como você está?']
+    # English, French, Spanish, German, Italian, Dutch, Russian, Portuguese
     
-    # for text in texst:
-    #     lang= detect_language([text], lang_detection_model)
+    for text in texst:
+        lang= detect_language([text], lang_detection_model)
         
-    #     if lang=='English':
-    #         print('The text is in English')
-    #     else:
-    #         print('The text is in', lang)
-    #         model, tokenizer = models[lang]
-    #         translated_text = Translate(text, model, tokenizer)
-    #         print('Translated text:', translated_text)
+        if lang=='English':
+            print('The text is in English')
+        else:
+            print('The text is in', lang)
+            model, tokenizer = models[lang]
+            translated_text = Translate(text, model, tokenizer)
+            print('Translated text:', translated_text)
 
 
     print('Time taken:', time.time()-startq)
