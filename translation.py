@@ -7,9 +7,9 @@ helsinki_models = {
     'French': 'Helsinki-NLP/opus-mt-fr-en',
     'Spanish': 'Helsinki-NLP/opus-mt-es-en',
     'Italian': 'Helsinki-NLP/opus-mt-it-en',
-    'Dutch': 'Helsinki-NLP/opus-mt-nl-en',
+    # 'Dutch': 'Helsinki-NLP/opus-mt-nl-en',
     'Russian': 'Helsinki-NLP/opus-mt-ru-en',
-    'Portugeese': 'Helsinki-NLP/opus-mt-cpp-en',
+    # 'Portugeese': 'Helsinki-NLP/opus-mt-cpp-en',
 }
 
 def load_models():
