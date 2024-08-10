@@ -23,7 +23,7 @@ def load_models():
         models[lang] = (model, tokenizer)
     return models
 
-def Translate(text, model, tokenizer):
+def translate_text(text, model, tokenizer):
     '''
     Translate the input text from source language to target language
     '''
@@ -85,7 +85,7 @@ if __name__=='__main__':
         else:
             print('The text is in', lang)
             model, tokenizer = models[lang]
-            translated_text = Translate(text, model, tokenizer)
+            translated_text = translate_text(text, model, tokenizer)
             print('Translated text:', translated_text)
 
 

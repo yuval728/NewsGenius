@@ -1,105 +1,75 @@
-from utils import Translate, generate_summary, Crawler, PredictSentiment
+import torch
+import scraper
+import translation, summarizer, sentiment
+import joblib
 import streamlit as st
-from transformers import MarianMTModel, MarianTokenizer
-import tensorflow as tf
 
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('punkt_tab')
 
-german_to_english = "Helsinki-NLP/opus-mt-de-en"
-german_tokenizer = MarianTokenizer.from_pretrained(german_to_english)
-german_model = MarianMTModel.from_pretrained(german_to_english)
+# Load models outside of the Streamlit functions to avoid reloading them each time the button is clicked
+@st.cache_resource(show_spinner=False)
+def load_models():
+    language_detection_model = joblib.load('Models/language_detector.pkl')
+    translation_models = translation.load_models()
+    sentiment_model, vocab, tokenizer = sentiment.load_vocab_tokenizer_model(
+        'Models/sentiment.pth', 'Models/vocab.pt', 100, 128, 2, 3
+    )
+    return language_detection_model, translation_models, sentiment_model, vocab, tokenizer
 
-french_to_english = "Helsinki-NLP/opus-mt-fr-en"
-french_tokenizer = MarianTokenizer.from_pretrained(french_to_english)
-french_model = MarianMTModel.from_pretrained(french_to_english)
+# Load models once
+language_detection_model, translation_models, sentiment_model, vocab, tokenizer = load_models()
 
-spanish_to_english = "Helsinki-NLP/opus-mt-es-en"
-spanish_tokenizer = MarianTokenizer.from_pretrained(spanish_to_english)
-spanish_model = MarianMTModel.from_pretrained(spanish_to_english)
+st.title("NewsGenius")
+st.markdown("This app summarizes and translates news articles. It uses a combination of machine learning models to detect the language of the article, translate it to English, summarize the content, and predict the sentiment of the article.")
 
-sentiment_model = tf.keras.models.load_model('Models/sentiment_analysis.keras')
+url = st.text_input("URL", value="", help="Enter a URL to translate and summarize")
+translate_btn = st.button("Translate and Summarize")
 
-sentiments = ["Negative", "Positive","Neutral"]
-sentimenent = None
-model = None
-tokenizer = None
-
-st.title("News Summarizer and Translator")
-with st.container(border=True):
-    # input a link
-    
-    st.title("Enter a URL")
-    url = st.text_input("URL", value="" , help="Enter a URL to translate and summarize")
-    c1, c2 = st.columns(2, gap="small")
-    with c1:
-        translate_btn = st.button("Translate and Summarize")
-    with c2:
-        model_names = ["german - english", "spanish - english" , "french - english"]
-        choice = st.selectbox("Model", options=model_names, label_visibility="collapsed")
-    
-
-with st.container(border=True):
-    
-    # input a text
-    # with c1:
-    st.title("Summary")
-    
-    if not translate_btn:
-        st.warning("Please input url to translate")
-    if translate_btn:
+if translate_btn:
+    with st.container():
+        st.title("Summary")
+        
         with st.spinner("Fetching content..."):
-            news_data = Crawler(url)
+            news_data = scraper.crawler(url)
 
         if news_data is None:
             st.warning("Invalid URL")
-            st.stop()
         else:
-            if choice == "german - english":
-                model = german_model
-                tokenizer = german_tokenizer
-            elif choice == "spanish - english":
-                model = spanish_model
-                tokenizer = spanish_tokenizer
-            else:    
-                model = french_model
-                tokenizer = french_tokenizer
-            if news_data is None:
-                st.warning("Invalid URL")
-                st.stop()
-            # print(Translate(news_data['title'], model, tokenizer))
             try:
                 with st.spinner("Translating and Summarizing..."):
+                    language = translation.detect_language([news_data['content']], language_detection_model)
+                    if language == 'English':
+                        summarized_content = summarizer.generate_summary(news_data['content'], num_sentences=5)
+                        translated_content = news_data['content']
+                        translated_title = news_data['title']
+                    elif language not in translation_models:
+                        st.warning("Currently, we only support translation from Spanish, French, German, Italian, Dutch, Portuguese, Russian. Please try again with a different language.")
+                        st.stop()
+                    else:
+                        model, tokenizer = translation_models[language]
+                        translated_title = translation.translate_text(news_data['title'], model, tokenizer)
+                        translated_content = translation.translate_text(news_data['content'], model, tokenizer)
+                        summarized_content = summarizer.generate_summary(translated_content, num_sentences=3)
                 
-                    translated_title = Translate(news_data['title'], model, tokenizer)
-                    translated_content = Translate(news_data['content'], model, tokenizer)
-                    summarized_content = generate_summary(translated_content)
-
-            except:
-                st.warning("Unable to translate content. Please chose the correct language to translate to.")
-                st.stop()
-            sentimenent = PredictSentiment(translated_title)[0]
-            if sentimenent is not None:
-                c1, c2 = st.columns([1,2], gap="small")
-                with c1:
-                    st.markdown("### Sentiment: ")
-                with c2:
-                    
-                        if sentimenent == 0:
+                output_sentiment = sentiment.sentiment_predictor(summarized_content, sentiment_model, vocab, tokenizer)
+                if output_sentiment is not None:
+                    c1, c2 = st.columns([1, 2], gap="small")
+                    with c1:
+                        st.markdown("### Sentiment: ")
+                    with c2:
+                        if output_sentiment == 0:
                             st.error("Negative")
-                        elif sentimenent == 1:
-                            st.success("Positive")
-                        else:
+                        elif output_sentiment == 1:
                             st.warning("Neutral")
+                        else:
+                            st.success("Positive")
 
-            st.markdown(f"### {translated_title}")
-            st.markdown("---")
-            st.write(summarized_content)
-
-        
-  
-                
-
-    # # divider
-    # st.markdown("---")
-    # st.title("Sentiment")
-
-    
+                st.markdown(f"### {translated_title}")
+                st.markdown(f"Original Language: {language}")
+                st.markdown("---")
+                st.write(summarized_content)
+            except Exception as e:
+                st.warning(f"Unable to translate content. Please try again. Error: {e}")

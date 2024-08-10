@@ -1,5 +1,5 @@
 # ignore the pycache file
 
 /__pycache__
-env1
+utils.py
 env
