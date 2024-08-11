@@ -15,7 +15,7 @@ News Genius is a comprehensive news aggregation platform that curates the latest
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/your-username/news-genius.git
+    git clone https://github.com/yuval728/news-genius.git
     ```
 2. Navigate to the project directory:
     ```sh
