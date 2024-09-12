@@ -9,8 +9,11 @@ nltk.download('stopwords')
 nltk.download('punkt')
 nltk.download('punkt_tab')
 
+st.set_page_config(page_title="NewGenius", page_icon=":books:", layout="wide")
+
 # Load models outside of the Streamlit functions to avoid reloading them each time the button is clicked
 @st.cache_resource(show_spinner=False)
+
 def load_models():
     language_detection_model = joblib.load('Models/language_detector.pkl')
     translation_models = translation.load_models()
